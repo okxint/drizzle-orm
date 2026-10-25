@@ -26,6 +26,10 @@ export const suggestions = (
 		if (statement.type === 'create_fk' && statement.cause !== 'alter_pk') {
 			const { columnsTo, table, tableTo, columns } = statement.fk;
 
+			// If the referenced table is not in the current schema snapshot (e.g. it is
+			// declared but not exported), we cannot verify uniqueness — skip the check.
+			if (!ddl2.tables.one({ name: tableTo })) continue;
+
 			const indexes = ddl2.indexes.list({ isUnique: true, table: tableTo });
 			const pk = ddl2.pks.one({ table: tableTo });
 
